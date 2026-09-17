@@ -27,3 +27,25 @@ class MedicaoRepository:
             {"volume": 1, "_id": 0}
         )
         return [doc["volume"] for doc in cursor if "volume" in doc]
+
+    @classmethod
+    def sum_volume_between(cls, device_id: str, start, end) -> float:
+        cursor = cls.collection.find(
+            {
+                "deviceId": device_id,
+                "timestamp": {"$gte": start, "$lt": end},
+            },
+            {"volume": 1, "_id": 0}
+        )
+        return sum(doc["volume"] for doc in cursor if "volume" in doc)
+
+    @classmethod
+    def find_volumes_since(cls, device_id: str, since):
+        cursor = cls.collection.find(
+            {
+                "deviceId": device_id,
+                "timestamp": {"$gte": since},
+            },
+            {"volume": 1, "timestamp": 1, "_id": 0}
+        )
+        return list(cursor)
