@@ -17,11 +17,13 @@ class UserRepository:
         return cls.collection.find_one({"email": email})
 
     @classmethod
+    def find_by_device_id(cls, device_id: str):
+        return cls.collection.find_one({"deviceId": device_id})
+
+    @classmethod
     def update(cls, email: str, update_fields: dict):
         result = cls.collection.update_one(
             {"email": email},
             {"$set": update_fields}
         )
         return result.modified_count
-    
-    
