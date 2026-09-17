@@ -13,6 +13,10 @@ class UserService:
         if existing_user:
             raise HTTPException(status_code=400, detail="Email informado já existe, por favor escolha outro")
 
+        existing_device = UserRepository.find_by_device_id(user.deviceId)
+        if existing_device:
+            raise HTTPException(status_code=400, detail="Este deviceId já está vinculado a outro usuário")
+
         user_dict = user.model_dump()
         user_dict["password"] = hash_password(user_dict["password"])
 
@@ -27,6 +31,12 @@ class UserService:
             raise HTTPException(status_code=404, detail="Usuário não encontrado")
 
         update_fields = user.model_dump(exclude_unset=True)
+
+        if "deviceId" in update_fields:
+            existing_device = UserRepository.find_by_device_id(update_fields["deviceId"])
+            if existing_device and existing_device["email"] != current_user_email:
+                raise HTTPException(status_code=400, detail="Este deviceId já está vinculado a outro usuário")
+
         if "password" in update_fields:
             update_fields["password"] = hash_password(update_fields["password"])
 
