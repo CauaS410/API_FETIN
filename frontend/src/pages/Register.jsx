@@ -4,9 +4,9 @@ import './nomeCadastro.css';
 
 function Register() {
   const [nome, setNome] = useState('');
-  const [cpf, setCpf] = useState('');
   const [email, setEmail] = useState('');
   const [celular, setCelular] = useState('');
+  const [deviceId, setDeviceId] = useState('');
   const [senha, setSenha] = useState('');
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
 
@@ -26,9 +26,9 @@ function Register() {
         },
         body: JSON.stringify({
           name: nome,
-          cpf: cpf,
           email: email,
           cell: celular,
+          deviceId: deviceId,
           password: senha,
         }),
       });
@@ -42,9 +42,9 @@ function Register() {
         });
 
         setNome('');
-        setCpf('');
         setEmail('');
         setCelular('');
+        setDeviceId('');
         setSenha('');
       } else if (resposta.status === 400) {
         setMensagem({
@@ -100,18 +100,6 @@ function Register() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="cpf">CPF</label>
-            <input
-              type="text"
-              id="cpf"
-              placeholder="Somente números"
-              required
-              value={cpf}
-              onChange={(e) => setCpf(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
             <label htmlFor="email">E-mail</label>
             <input
               type="email"
@@ -132,6 +120,18 @@ function Register() {
               required
               value={celular}
               onChange={(e) => setCelular(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="deviceId">Identificador do sensor</label>
+            <input
+              type="text"
+              id="deviceId"
+              placeholder="Ex: esp32-01"
+              required
+              value={deviceId}
+              onChange={(e) => setDeviceId(e.target.value)}
             />
           </div>
 
