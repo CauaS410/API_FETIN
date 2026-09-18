@@ -1,29 +1,16 @@
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
 from fastapi import HTTPException
 from app.repositories.medicao_repository import MedicaoRepository
 from app.services.conta_agua_service import ContaAguaService
-
-BRAZIL_TZ = ZoneInfo("America/Sao_Paulo")
-UTC_TZ = ZoneInfo("UTC")
+from app.services.notificacao_service import NotificacaoService
+from app.core.datetime_utils import BRAZIL_TZ, UTC_TZ, limites_do_dia_atual_em_utc
 
 
 class ConsumoAtipicoService:
 
     @staticmethod
-    def _limites_do_dia_atual_em_utc():
-        agora_local = datetime.now(BRAZIL_TZ)
-        inicio_local = agora_local.replace(hour=0, minute=0, second=0, microsecond=0)
-        fim_local = inicio_local + timedelta(days=1)
-
-        inicio_utc = inicio_local.astimezone(UTC_TZ).replace(tzinfo=None)
-        fim_utc = fim_local.astimezone(UTC_TZ).replace(tzinfo=None)
-
-        return inicio_utc, fim_utc
-
-    @staticmethod
     def get_consumo_hoje(device_id: str) -> dict:
-        inicio_utc, fim_utc = ConsumoAtipicoService._limites_do_dia_atual_em_utc()
+        inicio_utc, fim_utc = limites_do_dia_atual_em_utc()
         litros_hoje = MedicaoRepository.sum_volume_between(device_id, inicio_utc, fim_utc)
 
         return {
@@ -95,3 +82,25 @@ class ConsumoAtipicoService:
             "referenciaDiariaLitros": referencia_litros,
             "serie": serie,
         }
+
+    @staticmethod
+    def verificar_e_notificar(device_id: str, user: dict):
+        """Chamado depois que uma medição é salva. Reaproveita get_consumo_hoje
+        e get_daily_reference — não recalcula nada, só decide se notifica."""
+        try:
+            referencia = ContaAguaService.get_daily_reference(user["email"])
+        except HTTPException as exc:
+            if exc.status_code == 422:
+                NotificacaoService.notificar_referencia_pendente(device_id, user)
+                return
+            raise
+
+        consumo_hoje = ConsumoAtipicoService.get_consumo_hoje(device_id)
+
+        if consumo_hoje["consumoHojeM3"] > referencia["referenciaDiariaM3"]:
+            NotificacaoService.notificar_consumo_atipico(
+                device_id,
+                user,
+                consumo_litros=consumo_hoje["consumoHojeLitros"],
+                referencia_litros=referencia["referenciaDiariaLitros"],
+            )

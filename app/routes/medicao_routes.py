@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Optional
 from app.schemas.medicao.medicao_schema import MedicaoCreateSchema
 from app.services.medicao_service import MedicaoService
+from app.services.consumo_atipico_service import ConsumoAtipicoService
 from app.repositories.user_repository import UserRepository
 from app.core.dependencies import get_authenticated_device_id
 
@@ -13,11 +14,17 @@ router = APIRouter(prefix="/medicoes", tags=["Medições"])
 def create_medicao(medicao: MedicaoCreateSchema):
     dono = UserRepository.find_by_device_id(medicao.deviceId)
     if not dono:
-        raise HTTPException(
-            status_code=403,
-            detail="deviceId não está vinculado a nenhum usuário cadastrado"
-        )
-    return MedicaoService.create_medicao(medicao)
+        raise HTTPException(status_code=403, detail="deviceId não está vinculado a nenhum usuário cadastrado")
+
+    resultado = MedicaoService.create_medicao(medicao)
+
+    try:
+        ConsumoAtipicoService.verificar_e_notificar(medicao.deviceId, dono)
+    except Exception as exc:
+        # Uma falha na notificação nunca pode derrubar o registro da medição em si
+        print(f"Falha ao verificar/notificar consumo atípico: {exc}")
+
+    return resultado
 
 
 @router.get("/latest", summary="Obter a medição mais recente")
