@@ -18,3 +18,12 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(bearer_
         raise HTTPException(status_code=401, detail="Usuário não encontrado")
 
     return user
+
+def get_authenticated_device_id(current_user: dict = Depends(get_current_user)) -> str:
+    device_id = current_user.get("deviceId")
+    if not device_id:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não possui um dispositivo (deviceId) vinculado ao seu perfil"
+        )
+    return device_id

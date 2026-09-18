@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from fastapi import HTTPException
-from app.repositories.user_repository import UserRepository
 from app.repositories.medicao_repository import MedicaoRepository
 from app.services.conta_agua_service import ContaAguaService
 
@@ -23,14 +22,8 @@ class ConsumoAtipicoService:
         return inicio_utc, fim_utc
 
     @staticmethod
-    def get_consumo_hoje(user_email: str) -> dict:
-        user = UserRepository.find_by_email(user_email)
-        if not user or not user.get("deviceId"):
-            raise HTTPException(status_code=404, detail="Usuário não possui um sensor (deviceId) vinculado")
-
-        device_id = user["deviceId"]
+    def get_consumo_hoje(device_id: str) -> dict:
         inicio_utc, fim_utc = ConsumoAtipicoService._limites_do_dia_atual_em_utc()
-
         litros_hoje = MedicaoRepository.sum_volume_between(device_id, inicio_utc, fim_utc)
 
         return {
@@ -40,8 +33,8 @@ class ConsumoAtipicoService:
         }
 
     @staticmethod
-    def get_status_consumo(user_email: str) -> dict:
-        consumo_hoje = ConsumoAtipicoService.get_consumo_hoje(user_email)
+    def get_status_consumo(device_id: str, user_email: str) -> dict:
+        consumo_hoje = ConsumoAtipicoService.get_consumo_hoje(device_id)
         referencia = ContaAguaService.get_daily_reference(user_email)
 
         consumo_m3 = consumo_hoje["consumoHojeM3"]
@@ -62,13 +55,7 @@ class ConsumoAtipicoService:
         }
 
     @staticmethod
-    def get_historico_diario(user_email: str, dias: int = 14) -> dict:
-        user = UserRepository.find_by_email(user_email)
-        if not user or not user.get("deviceId"):
-            raise HTTPException(status_code=404, detail="Usuário não possui um sensor (deviceId) vinculado")
-
-        device_id = user["deviceId"]
-
+    def get_historico_diario(device_id: str, user_email: str, dias: int = 14) -> dict:
         agora_local = datetime.now(BRAZIL_TZ)
         inicio_local = (agora_local - timedelta(days=dias - 1)).replace(hour=0, minute=0, second=0, microsecond=0)
         inicio_utc = inicio_local.astimezone(UTC_TZ).replace(tzinfo=None)

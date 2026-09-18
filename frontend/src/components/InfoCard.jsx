@@ -7,7 +7,7 @@ function InfoCard({ title, value, unit, loading, error, highlight }) {
 
       {!loading && error && (
         <span className="info-card__state info-card__state--error">
-          Não foi possível carregar.
+          Sem registro do sensor.
         </span>
       )}
 
