@@ -30,7 +30,7 @@ function Medicoes() {
 
         {ultima.loading && <p className="section-state">Carregando...</p>}
         {!ultima.loading && ultima.error && (
-          <p className="section-state section-state--error">Não foi possível carregar.</p>
+          <p className="section-state section-state--error">Nenhuma medição registrada ainda.</p>
         )}
 
         {!ultima.loading && !ultima.error && ultima.data && (
