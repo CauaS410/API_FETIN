@@ -32,8 +32,9 @@
 .notification-bell__panel {
   position: absolute;
   top: 40px;
-  right: 0;
+  left: 0;
   width: 320px;
+  max-width: calc(100vw - 32px);
   max-height: 400px;
   overflow-y: auto;
   background: white;
