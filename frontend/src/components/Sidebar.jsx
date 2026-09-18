@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import NotificationBell from './NotificationBell';
 import './Sidebar.css';
 
 const NAV_ITEMS = [
@@ -38,6 +39,10 @@ function Sidebar({ usuario }) {
         <p className="sidebar__description">
           API para controle de gastos e visualização de consumo de água residencial.
         </p>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+        <NotificationBell />
       </div>
 
       <nav className="sidebar__nav">
