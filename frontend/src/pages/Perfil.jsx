@@ -32,8 +32,8 @@ function Perfil() {
         }}>
           <p><strong>Nome:</strong> {usuario.name}</p>
           <p><strong>E-mail:</strong> {usuario.email}</p>
-          <p><strong>CPF:</strong> {usuario.cpf}</p>
           <p><strong>Celular:</strong> {usuario.cell}</p>
+          <p><strong>Sensor vinculado:</strong> {usuario.deviceId}</p>
         </div>
       )}
     </div>
